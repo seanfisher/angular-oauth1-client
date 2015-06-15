@@ -1,0 +1,26 @@
+{
+  "name": "angular-oauth1-client",
+  "version": "0.1.0",
+  "authors": [
+    "me@seafish.io"
+  ],
+  "description": "An OAuth1.0a client for AngularJS",
+  "main": "./dist/angular-oauth1-client.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "AngularJS",
+    "Angular",
+    "OAuth1",
+    "OAuth1.0a"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
