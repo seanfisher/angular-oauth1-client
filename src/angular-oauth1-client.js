@@ -1,4 +1,4 @@
-angular.module('oauth1Client', [])
+angular.module('oauth1Client', ['LocalStorageModule'])
 .factory('oauth1Signer', [function oauth1SignerFactory() {
     function randomString(length) {
         var text = "";
