@@ -4,7 +4,7 @@
   "authors": [
     "me@seafish.io"
   ],
-  "description": "An OAuth1.0a client for AngularJS",
+  "description": "An OAuth1.0a client for AngularJS and Cordova/Ionic",
   "main": "./dist/angular-oauth1-client.js",
   "keywords": [
     "AngularJS",
