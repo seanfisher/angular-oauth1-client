@@ -1,6 +1,9 @@
-/*! angular-oauth1-client - v0.1.0 - 2015-06-16
+/*! angular-oauth1-client - v0.1.2 - 2015-06-16
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
-angular.module('oauth1Client', [])
+
+(function(window, angular, undefined) {'use strict';
+
+angular.module('oauth1Client', ['LocalStorageModule'])
 .factory('oauth1Signer', [function oauth1SignerFactory() {
     function randomString(length) {
         var text = "";
@@ -351,3 +354,5 @@ angular.module('oauth1Client', [])
 }])
 
 ;
+
+})(window, window.angular);

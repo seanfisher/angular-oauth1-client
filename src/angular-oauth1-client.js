@@ -1,3 +1,6 @@
+(function(window, angular, undefined) {'use strict';
+
+
 angular.module('oauth1Client', ['LocalStorageModule'])
 .factory('oauth1Signer', [function oauth1SignerFactory() {
     function randomString(length) {
@@ -349,3 +352,5 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 }])
 
 ;
+
+})(window, window.angular);
