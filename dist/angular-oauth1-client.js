@@ -1,3 +1,5 @@
+/*! angular-oauth1-client - v0.1.0 - 2015-06-16
+* Copyright (c) 2015 Sean Fisher; Licensed MIT */
 angular.module('oauth1Client', [])
 .factory('oauth1Signer', [function oauth1SignerFactory() {
     function randomString(length) {
