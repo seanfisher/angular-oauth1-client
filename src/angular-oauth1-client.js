@@ -351,7 +351,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     }
 }])
 
-.service('oauth1Headers', function oauth1AuthorizedHttpService() {
+.service('oauth1Headers', function oauth1HeadersService() {
     return {
         create: function(signer) {
             this.oauth1Signer = signer;
