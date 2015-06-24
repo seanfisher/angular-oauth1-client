@@ -248,7 +248,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         };
     }
 
-    this.$get = ['$q', '$http', 'oauth1Signer', 'oauth1AuthorizedHttp', 'localStorageService', function($q, $http, oauth1Signer, oauth1AuthorizedHttp, localStorageService) {
+    this.$get = ['$q', '$http', 'oauth1Signer', 'oauth1Headers', 'oauth1AuthorizedHttp', 'localStorageService', function($q, $http, oauth1Signer, oauth1Headers, oauth1AuthorizedHttp, localStorageService) {
 
         var self = this;
 
@@ -319,7 +319,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                                 token : oauth_token,
                                 tokenSecret : oauth_token_secret
                                 });
-                        
+
+                        oauth1Headers.create(signer);
                         onCompletion(oauth1AuthorizedHttp.create(signer));
                 });
                  
