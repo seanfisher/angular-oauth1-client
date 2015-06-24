@@ -1,9 +1,45 @@
-/*! angular-oauth1-client - v0.1.2 - 2015-06-16
+/*! angular-oauth1-client - v0.1.2 - 2015-06-24
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
-
 (function(window, angular, undefined) {'use strict';
 
+
 angular.module('oauth1Client', ['LocalStorageModule'])
+ 
+ .service('oauthPersistence', function(localStorageService){
+          
+  var self = this;
+  var OAUTH_TOKEN_KEY = "oauth_token";
+  var OAUTH_TOKEN_SECRET_KEY = "oauth_token_secret";
+  
+  self.storeAccessToken = function(access_data) {
+  
+  localStorageService.set(OAUTH_TOKEN_KEY, access_data.oauth_token);
+  localStorageService.set(OAUTH_TOKEN_SECRET_KEY, access_data.oauth_token_secret);
+  
+  }
+  
+  self.clearAccessToken = function(){
+  localStorageService.remove(OAUTH_TOKEN_KEY);
+  localStorageService.remove(OAUTH_TOKEN_SECRET_KEY);
+  }
+  
+  self.accessIsInStorage = function(isAuthenticated, isNotAuthenticated){
+  if (localStorageService.get(OAUTH_TOKEN_KEY) && localStorageService.get(OAUTH_TOKEN_SECRET_KEY)) {
+  isAuthenticated();
+  } else {
+  isNotAuthenticated();
+  }
+  
+  }
+  self.getTokenAndSecret = function(onCompletion){
+  onCompletion(localStorageService.get(OAUTH_TOKEN_KEY), localStorageService.get(OAUTH_TOKEN_SECRET_KEY));
+  
+  };
+  
+  
+  
+  })
+ 
 .factory('oauth1Signer', [function oauth1SignerFactory() {
     function randomString(length) {
         var text = "";
@@ -214,9 +250,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         };
     }
 
-    this.$get = ['$q', '$http', 'oauth1Signer', 'oauth1AuthorizedHttp', 'localStorageService', function($q, $http, oauth1Signer, oauth1AuthorizedHttp, localStorageService) {
-        var OAUTH_TOKEN_KEY = "oauth_token";
-        var OAUTH_TOKEN_SECRET_KEY = "oauth_token_secret";
+    this.$get = ['$q', '$http', 'oauth1Signer', 'oauth1Headers', 'oauth1AuthorizedHttp', 'localStorageService', function($q, $http, oauth1Signer, oauth1Headers, oauth1AuthorizedHttp, localStorageService) {
+
         var self = this;
 
         function getOAuthSigner(params) {
@@ -271,69 +306,80 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             return deffered.promise;
         }
 
-        function isAuthenticated() {
-            // TODO: Check to see whether or not the token has expired
-            return (localStorageService.get(OAUTH_TOKEN_KEY) && localStorageService.get(OAUTH_TOKEN_SECRET_KEY));
-        }
-
-        function storeAccessToken(access_data) {
-            localStorageService.set(OAUTH_TOKEN_KEY, access_data.oauth_token);
-            localStorageService.set(OAUTH_TOKEN_SECRET_KEY, access_data.oauth_token_secret);
-        }
-
-        function clearAccessToken() {
-            localStorageService.remove(OAUTH_TOKEN_KEY);
-            localStorageService.remove(OAUTH_TOKEN_SECRET_KEY);
-        }
-
-        function getAuthorizedHttpFromStorage() {
-            var oauth_token = localStorageService.get(OAUTH_TOKEN_KEY);
-            var oauth_token_secret = localStorageService.get(OAUTH_TOKEN_SECRET_KEY);
-
-            var signer = getOAuthSigner({
-                url : requestEndpoint,
-                consumerKey : consumerKey,
-                consumerSecret : consumerSecret,
-                token : oauth_token,
-                tokenSecret : oauth_token_secret
-            });
-            return oauth1AuthorizedHttp.create(signer);
-        }
-
-        return {
-            authorize: function() {
-                var deffered = $q.defer();
-                if (isAuthenticated()) {
-                    deffered.resolve(getAuthorizedHttpFromStorage());
-                } else {
-                    var oauthSigner = getOAuthSigner({
-                        url : requestEndpoint,
-                        consumerKey : consumerKey,
-                        consumerSecret : consumerSecret,
-                        callback : oauthCallback
-                    });
-                    getRequestToken(oauthSigner, oauthCallback)
-                        .then(function(request_data) {
-                            return getAuthorizationToken(request_data.oauth_token, oauthCallback);
-                        })
-                        .then(function(authorization_data) {
-                            oauthSigner = getOAuthSigner({
-                                url : accessEndpoint,
+       function checkAuthenticated(isAuthenticated, isNotAuthenticated) {
+     
+           oauthPersistence.accessIsInStorage(isAuthenticated, isNotAuthenticated);
+       }
+     
+        function getAuthorizedHttpFromStorage(onCompletion) {
+     
+                 oauthPersistence.getTokenAndSecret(function(oauth_token, oauth_token_secret){
+                        var signer = getOAuthSigner({
+                                url : requestEndpoint,
                                 consumerKey : consumerKey,
-                                token : authorization_data.returned_oauth_token,
-                                callback : oauthCallback,
-                                verifier : authorization_data.oauth_verifier
-                            });
-                            return getAccessToken(oauthSigner);
-                        })
-                        .then(function(access_data) {
-                            storeAccessToken(access_data);
-                            deffered.resolve(getAuthorizedHttpFromStorage());
-                        });
-                }
-                return deffered.promise;
-            }
-        }
+                                consumerSecret : consumerSecret,
+                                token : oauth_token,
+                                tokenSecret : oauth_token_secret
+                                });
+
+                        oauth1Headers.create(signer);
+                        onCompletion(oauth1AuthorizedHttp.create(signer));
+                });
+                 
+                 
+         }
+
+         return {
+                 authorize: function(storage) {
+                 var deffered = $q.defer();
+                 checkAuthenticated(function(){
+                                
+                        getAuthorizedHttpFromStorage(function(item) {
+                                                 deffered.resolve(item);
+                         });
+                    
+                    }, function () {
+                    
+                    var oauthSigner = getOAuthSigner({
+                                                     url : requestEndpoint,
+                                                     consumerKey : consumerKey,
+                                                     consumerSecret : consumerSecret,
+                                                     callback : oauthCallback
+                                                     });
+                    var authObj = oauthSigner.oauthParameters();
+                    
+                    getRequestToken(oauthSigner, oauthCallback)
+                    .then(function(request_data) {
+                          return getAuthorizationToken(request_data.oauth_token, oauthCallback);
+                          })
+                    .then(function(authorization_data) {
+                          //                            console.log("gettingOauthSigner");
+                          oauthSigner = getOAuthSigner({
+                               url : accessEndpoint,
+                               consumerKey : consumerKey,
+                               token : authorization_data.returned_oauth_token,
+                               callback : oauthCallback,
+                               verifier : authorization_data.oauth_verifier
+                               });
+                          return getAccessToken(oauthSigner);
+                          
+                          })
+                    .then(function(access_data) {
+                          
+                          oauthPersistence.storeAccessToken(access_data);
+                          getAuthorizedHttpFromStorage(function(item) {deffered.resolve(item);});
+                          
+                          
+                          });
+                    }
+                    );
+             
+             
+             return deffered.promise;
+             
+             }
+             
+         }
     }];
 })
 
@@ -352,6 +398,28 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         }
     }
 }])
+
+.service('oauth1Headers', function oauth1HeadersService() {
+    return {
+        create: function(signer) {
+            this.oauth1Signer = signer;
+            var self = this;
+        },
+        getHeaders: function(url, method) {
+            var self = this;
+            if(self.oauth1Signer){
+                self.oauth1Signer.method = method;
+                self.oauth1Signer.url = url;
+                return {'Authorization' : "OAuth " + self.oauth1Signer.authorizationHeader(),
+                        'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
+                       };
+            }
+            else{
+                return {'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'};
+            }
+        }
+    }
+})
 
 ;
 
