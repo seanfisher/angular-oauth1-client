@@ -250,7 +250,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         };
     }
 
-    this.$get = ['$q', '$http', 'oauth1Signer', 'oauth1Headers', 'oauth1AuthorizedHttp', 'localStorageService', function($q, $http, oauth1Signer, oauth1Headers, oauth1AuthorizedHttp, localStorageService) {
+    this.$get = ['$q', '$http', 'oauth1Signer', 'oauth1Headers', 'oauth1AuthorizedHttp', 'oauthPersistence', function($q, $http, oauth1Signer, oauth1Headers, oauth1AuthorizedHttp, oauthPersistence) {
 
         var self = this;
 
