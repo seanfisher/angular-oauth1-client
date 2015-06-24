@@ -358,7 +358,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             var self = this;
         },
         getHeaders: function(url, method) {
-            console.log('oauth1Signer: ' + self.oauth1Signer);
+            var self = this;
             if(self.oauth1Signer){
                 self.oauth1Signer.method = method;
                 self.oauth1Signer.url = url;
