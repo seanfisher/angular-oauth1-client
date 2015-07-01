@@ -1,43 +1,44 @@
-(function(window, angular, undefined) {'use strict';
 
 
 angular.module('oauth1Client', ['LocalStorageModule'])
- 
- .service('oauthPersistence', function(localStorageService){
-          
+
+ .service('oauthPersistence', function(localStorageService, $q){
+
   var self = this;
   var OAUTH_TOKEN_KEY = "oauth_token";
   var OAUTH_TOKEN_SECRET_KEY = "oauth_token_secret";
-  
+
   self.storeAccessToken = function(access_data) {
-  
-  localStorageService.set(OAUTH_TOKEN_KEY, access_data.oauth_token);
-  localStorageService.set(OAUTH_TOKEN_SECRET_KEY, access_data.oauth_token_secret);
-  
+  var defer = $q.defer();
+      localStorageService.set(OAUTH_TOKEN_KEY, access_data.oauth_token);
+      localStorageService.set(OAUTH_TOKEN_SECRET_KEY, access_data.oauth_token_secret);
+
+  defer.resolve();
+  return defer.promise;
   }
-  
+
   self.clearAccessToken = function(){
   localStorageService.remove(OAUTH_TOKEN_KEY);
   localStorageService.remove(OAUTH_TOKEN_SECRET_KEY);
   }
-  
+
   self.accessIsInStorage = function(isAuthenticated, isNotAuthenticated){
   if (localStorageService.get(OAUTH_TOKEN_KEY) && localStorageService.get(OAUTH_TOKEN_SECRET_KEY)) {
   isAuthenticated();
   } else {
   isNotAuthenticated();
   }
-  
+
   }
   self.getTokenAndSecret = function(onCompletion){
   onCompletion(localStorageService.get(OAUTH_TOKEN_KEY), localStorageService.get(OAUTH_TOKEN_SECRET_KEY));
-  
+
   };
-  
-  
-  
+
+
+
   })
- 
+
 .factory('oauth1Signer', [function oauth1SignerFactory() {
     function randomString(length) {
         var text = "";
@@ -138,9 +139,11 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 },
                 parameterEncoded: function(fields) {
                     var self = this;
-                    return _.map(fields, function(field) {
+                    var strToSign =
+                        _.map(fields, function(field) {
                         return self.percentEncode(field);
-                    }).join("&");
+                        }).join("&");
+                    return strToSign;
                 },
                 baseString: function() {
                     var self;
@@ -218,6 +221,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     var authorizeEndpoint;
     var accessEndpoint;
     var oauthCallback;
+//    var removeRequestEndpoint;
 
     this.config = function(settings) {
         consumerKey = settings.consumerKey;
@@ -226,6 +230,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         authorizeEndpoint = settings.authorizeEndpoint;
         accessEndpoint = settings.accessEndpoint;
         oauthCallback = settings.oauthCallback;
+//        removeRequestEndpoint = settings.removeRequestEndpoint;
     }
 
     // utility functions
@@ -274,7 +279,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 
         function getAuthorizationToken(oauth_token, callback_url) {
             var deffered = $q.defer();
-            var auth_window = window.open(authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url, '_blank', 'location=no');
+            var auth_window = window.open(authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url, '_blank', 'location=no,clearcache=yes');
             auth_window.addEventListener('loadstart', function(event) {
                 if((event.url).startsWith(callback_url)) {
                     auth_window.close();
@@ -305,12 +310,12 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         }
 
        function checkAuthenticated(isAuthenticated, isNotAuthenticated) {
-     
+
            oauthPersistence.accessIsInStorage(isAuthenticated, isNotAuthenticated);
        }
-     
+
         function getAuthorizedHttpFromStorage(onCompletion) {
-     
+
                  oauthPersistence.getTokenAndSecret(function(oauth_token, oauth_token_secret){
                         var signer = getOAuthSigner({
                                 url : requestEndpoint,
@@ -323,21 +328,21 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                         oauth1Headers.create(signer);
                         onCompletion(oauth1AuthorizedHttp.create(signer));
                 });
-                 
-                 
+
+
          }
 
          return {
                  authorize: function(storage) {
                  var deffered = $q.defer();
                  checkAuthenticated(function(){
-                                
+
                         getAuthorizedHttpFromStorage(function(item) {
                                                  deffered.resolve(item);
                          });
-                    
+
                     }, function () {
-                    
+
                     var oauthSigner = getOAuthSigner({
                                                      url : requestEndpoint,
                                                      consumerKey : consumerKey,
@@ -345,12 +350,12 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                                                      callback : oauthCallback
                                                      });
                     var authObj = oauthSigner.oauthParameters();
-                    
+
                     getRequestToken(oauthSigner, oauthCallback)
-                    .then(function(request_data) {
+                        .then(function(request_data) {
                           return getAuthorizationToken(request_data.oauth_token, oauthCallback);
                           })
-                    .then(function(authorization_data) {
+                        .then(function(authorization_data) {
                           //                            console.log("gettingOauthSigner");
                           oauthSigner = getOAuthSigner({
                                url : accessEndpoint,
@@ -360,28 +365,30 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                                verifier : authorization_data.oauth_verifier
                                });
                           return getAccessToken(oauthSigner);
-                          
+
                           })
                     .then(function(access_data) {
-                          
-                          oauthPersistence.storeAccessToken(access_data);
-                          getAuthorizedHttpFromStorage(function(item) {deffered.resolve(item);});
-                          
-                          
+
+                          oauthPersistence.storeAccessToken(access_data).then(function(){
+                            getAuthorizedHttpFromStorage(function(item) {deffered.resolve(item);});
+                          });
+
+
+
                           });
                     }
                     );
-             
-             
+
+
              return deffered.promise;
-             
+
              }
-             
+
          }
     }];
 })
 
-.service('oauth1AuthorizedHttp', ['$http', function oauth1AuthorizedHttpService($http) {
+.service('oauth1AuthorizedHttp', ['$http', '$q', function oauth1AuthorizedHttpService($http, $q) {
     return {
         create: function(signer) {
             this.oauth1Signer = signer;
@@ -391,7 +398,16 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 self.oauth1Signer.url = config.url;
                 $http.defaults.headers.common.Authorization = "OAuth " + self.oauth1Signer.authorizationHeader();
                 $http.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
-                return $http(config);
+                var defer = $q.defer();
+                $http(config).success(
+                    function(data, status, headers, config){
+                        defer.resolve(data, status, headers, config);
+                    })
+                .error(function(data, status, headers, config){
+                        defer.reject(data, status, headers, config);
+                });
+
+                return defer.promise;
             };
         }
     }
