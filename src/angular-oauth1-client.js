@@ -1,4 +1,8 @@
 
+/*! angular-oauth1-client - v0.1.2 - 2015-06-24
+* Copyright (c) 2015 Sean Fisher; Licensed MIT */
+(function(window, angular, undefined) {'use strict';
+
 
 angular.module('oauth1Client', ['LocalStorageModule'])
 
@@ -356,7 +360,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                           return getAuthorizationToken(request_data.oauth_token, oauthCallback);
                           })
                         .then(function(authorization_data) {
-                          //                            console.log("gettingOauthSigner");
                           oauthSigner = getOAuthSigner({
                                url : accessEndpoint,
                                consumerKey : consumerKey,
@@ -367,17 +370,12 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                           return getAccessToken(oauthSigner);
 
                           })
-                    .then(function(access_data) {
-
-                          oauthPersistence.storeAccessToken(access_data).then(function(){
-                            getAuthorizedHttpFromStorage(function(item) {deffered.resolve(item);});
-                          });
-
-
-
-                          });
-                    }
-                    );
+                        .then(function(access_data) {
+                            oauthPersistence.storeAccessToken(access_data).then(function(){
+                                getAuthorizedHttpFromStorage(function(item) {deffered.resolve(item);});
+                            });
+                        });
+                    });
 
 
              return deffered.promise;
@@ -413,7 +411,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     }
 }])
 
-.service('oauth1Headers', function oauth1HeadersService() {
+.service('oauth1Headers', function oauth1HeadersService($http) {
     return {
         create: function(signer) {
             this.oauth1Signer = signer;
@@ -431,6 +429,9 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             else{
                 return {'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'};
             }
+        },
+        removeAuthorizationHeader: function() {
+            $http.defaults.headers.common.Authorization = undefined;
         }
     }
 })
