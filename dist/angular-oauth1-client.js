@@ -1,3 +1,5 @@
+/*! angular-oauth1-client - v0.1.2 - 2015-07-09
+* Copyright (c) 2015 Sean Fisher; Licensed MIT */
 /*! angular-oauth1-client - v0.1.2 - 2015-07-07
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
 
@@ -376,6 +378,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                             oauthPersistence.storeAccessToken(access_data).then(function(){
                                 getAuthorizedHttpFromStorage(function(item) {deffered.resolve(item);});
                             });
+                        }, function(error) {
+                           deffered.resolve({error: 'error'});
                         });
                     });
 
