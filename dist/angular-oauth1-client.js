@@ -1,3 +1,5 @@
+/*! angular-oauth1-client - v0.1.2 - 2015-07-21
+* Copyright (c) 2015 Sean Fisher; Licensed MIT */
 /*! angular-oauth1-client - v0.1.2 - 2015-07-09
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
 /*! angular-oauth1-client - v0.1.2 - 2015-07-07
@@ -285,11 +287,16 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             return deferred.promise;
         }
 
-        function getAuthorizationToken(oauth_token, callback_url) {
+        function getAuthorizationToken(oauth_token, callback_url, afterWindowOpen, beforeWindowClose) {
             var deffered = $q.defer();
             var auth_window = window.open(authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url, '_blank', 'location=no,clearcache=yes');
+            var urlsVisited = 0;
             auth_window.addEventListener('loadstart', function(event) {
+                urlsVisited += 1;
                 if((event.url).startsWith(callback_url)) {
+                    if(angular.isFunction(beforeWindowClose)){
+                        beforeWindowClose();
+                    }
                     auth_window.close();
 
                     deffered.resolve({
@@ -297,6 +304,11 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                         oauth_verifier: getURLParameter(event.url, 'verifier'),
                         wp_scope: getURLParameter(event.url, 'wp_scope')
                     });
+                }
+                if(urlsVisited == 1) {
+                    if(angular.isFunction(afterWindowOpen)){
+                        afterWindowOpen();
+                    }
                 }
             });
             return deffered.promise;
@@ -342,7 +354,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
          }
 
          return {
-                 authorize: function(storage) {
+                 authorize: function(afterWindowOpen, beforeWindowClose) {
                  var deffered = $q.defer();
 
                     var oauthSigner = getOAuthSigner({
@@ -355,7 +367,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 
                     getRequestToken(oauthSigner, oauthCallback)
                         .then(function(request_data) {
-                          return getAuthorizationToken(request_data.oauth_token, oauthCallback);
+                          return getAuthorizationToken(request_data.oauth_token, oauthCallback, afterWindowOpen, beforeWindowClose);
                           })
                         .then(function(authorization_data) {
                           oauthSigner = getOAuthSigner({
