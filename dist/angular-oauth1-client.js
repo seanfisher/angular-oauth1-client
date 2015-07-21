@@ -322,9 +322,11 @@ angular.module('oauth1Client', ['LocalStorageModule'])
            oauthPersistence.accessIsInStorage(isAuthenticated, isNotAuthenticated);
        }
 
-        function getAuthorizedHttpFromStorage(onCompletion) {
+        function getAuthorizedHttp(onCompletion, access_data) {
 
-                 oauthPersistence.getTokenAndSecret(function(oauth_token, oauth_token_secret){
+
+                        var oauth_token = access_data.oauth_token;
+                        var oauth_token_secret = access_data.oauth_token_secret;
                         var signer = getOAuthSigner({
                                 url : requestEndpoint,
                                 consumerKey : consumerKey,
@@ -335,7 +337,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 
                         oauth1Headers.create(signer);
                         onCompletion(oauth1AuthorizedHttp.create(signer));
-                });
 
 
          }
@@ -343,13 +344,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
          return {
                  authorize: function(storage) {
                  var deffered = $q.defer();
-                 checkAuthenticated(function(){
-
-                        getAuthorizedHttpFromStorage(function(item) {
-                                                 deffered.resolve(item);
-                         });
-
-                    }, function () {
 
                     var oauthSigner = getOAuthSigner({
                                                      url : requestEndpoint,
@@ -376,12 +370,12 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                           })
                         .then(function(access_data) {
                             oauthPersistence.storeAccessToken(access_data).then(function(){
-                                getAuthorizedHttpFromStorage(function(item) {deffered.resolve(item);});
+                                getAuthorizedHttp(function(item) {deffered.resolve(item);}, access_data);
                             });
                         }, function(error) {
                            deffered.resolve({error: 'error'});
                         });
-                    });
+
 
 
              return deffered.promise;
@@ -405,9 +399,11 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 var defer = $q.defer();
                 $http(config).success(
                     function(data, status, headers, config){
+                        data.authToken = self.oauth1Signer.token;
                         defer.resolve(data, status, headers, config);
                     })
                 .error(function(data, status, headers, config){
+                        alert("here");
                         defer.reject(data, status, headers, config);
                 });
 
