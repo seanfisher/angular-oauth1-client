@@ -1,3 +1,5 @@
+/*! angular-oauth1-client - v0.1.2 - 2015-07-22
+* Copyright (c) 2015 Sean Fisher; Licensed MIT */
 /*! angular-oauth1-client - v0.1.2 - 2015-07-21
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
 /*! angular-oauth1-client - v0.1.2 - 2015-07-09
@@ -289,10 +291,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 
         function getAuthorizationToken(oauth_token, callback_url, afterWindowOpen, beforeWindowClose) {
             var deffered = $q.defer();
-            var auth_window = window.open(authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url, '_blank', 'location=no,clearcache=yes');
-            var urlsVisited = 0;
+            var auth_window = window.open(authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url, '_blank', 'location=no,clearcache=yes,hidden=yes');
             auth_window.addEventListener('loadstart', function(event) {
-                urlsVisited += 1;
                 if((event.url).startsWith(callback_url)) {
                     if(angular.isFunction(beforeWindowClose)){
                         beforeWindowClose();
@@ -305,10 +305,11 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                         wp_scope: getURLParameter(event.url, 'wp_scope')
                     });
                 }
-                if(urlsVisited == 1) {
-                    if(angular.isFunction(afterWindowOpen)){
-                        afterWindowOpen();
-                    }
+            });
+            auth_window.addEventListener('loadstop', function(event) {
+                auth_window.show();
+                if(angular.isFunction(afterWindowOpen)){
+                    afterWindowOpen();
                 }
             });
             return deffered.promise;
