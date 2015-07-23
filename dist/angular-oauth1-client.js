@@ -1,13 +1,4 @@
-/*! angular-oauth1-client - v0.1.2 - 2015-07-22
-* Copyright (c) 2015 Sean Fisher; Licensed MIT */
-/*! angular-oauth1-client - v0.1.2 - 2015-07-21
-* Copyright (c) 2015 Sean Fisher; Licensed MIT */
-/*! angular-oauth1-client - v0.1.2 - 2015-07-09
-* Copyright (c) 2015 Sean Fisher; Licensed MIT */
-/*! angular-oauth1-client - v0.1.2 - 2015-07-07
-* Copyright (c) 2015 Sean Fisher; Licensed MIT */
-
-/*! angular-oauth1-client - v0.1.2 - 2015-06-24
+/*! angular-oauth1-client - v0.1.8 - 2015-07-23
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
 (function(window, angular, undefined) {'use strict';
 
@@ -355,6 +346,17 @@ angular.module('oauth1Client', ['LocalStorageModule'])
          }
 
          return {
+                oAuthSigner: function(onCompletion) {
+                   oauthPersistence.getTokenAndSecret(function (oauth_token, oauth_token_secret){
+                        onCompletion(getOAuthSigner({
+                            url : requestEndpoint,
+                            consumerKey : consumerKey,
+                            consumerSecret : consumerSecret,
+                            token : oauth_token,
+                            tokenSecret : oauth_token_secret
+                        }));
+                   });
+                 },
                  authorize: function(afterWindowOpen, beforeWindowClose) {
                  var deffered = $q.defer();
 
