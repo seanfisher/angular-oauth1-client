@@ -1,3 +1,5 @@
+/*! angular-oauth1-client - v0.1.2 - 2015-07-24
+* Copyright (c) 2015 Sean Fisher; Licensed MIT */
 /*! angular-oauth1-client - v0.1.8 - 2015-07-23
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
 (function(window, angular, undefined) {'use strict';
@@ -280,9 +282,10 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             return deferred.promise;
         }
 
-        function getAuthorizationToken(oauth_token, callback_url, afterWindowOpen, beforeWindowClose) {
+        function getAuthorizationToken(oauth_token, callback_url, afterWindowOpen, beforeWindowClose, onLoad) {
             var deffered = $q.defer();
-            var auth_window = window.open(authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url, '_blank', 'location=no,clearcache=yes,hidden=yes');
+            var auth_window = window.open(authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url, '_blank', 'location=yes,clearcache=yes,hidden=yes');
+            var visible = false;
             auth_window.addEventListener('loadstart', function(event) {
                 if((event.url).startsWith(callback_url)) {
                     if(angular.isFunction(beforeWindowClose)){
@@ -298,7 +301,13 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 }
             });
             auth_window.addEventListener('loadstop', function(event) {
-                auth_window.show();
+                if(angular.isFunction(onLoad)) {
+                    onLoad(auth_window, event);
+                }
+                if(!visible) {
+                    auth_window.show();
+                    visible = true;
+                }
                 if(angular.isFunction(afterWindowOpen)){
                     afterWindowOpen();
                 }
@@ -357,7 +366,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                         }));
                    });
                  },
-                 authorize: function(afterWindowOpen, beforeWindowClose) {
+                 authorize: function(afterWindowOpen, beforeWindowClose, onLoad) {
                  var deffered = $q.defer();
 
                     var oauthSigner = getOAuthSigner({
@@ -370,7 +379,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 
                     getRequestToken(oauthSigner, oauthCallback)
                         .then(function(request_data) {
-                          return getAuthorizationToken(request_data.oauth_token, oauthCallback, afterWindowOpen, beforeWindowClose);
+                          return getAuthorizationToken(request_data.oauth_token, oauthCallback, afterWindowOpen, beforeWindowClose, onLoad);
                           })
                         .then(function(authorization_data) {
                           oauthSigner = getOAuthSigner({
