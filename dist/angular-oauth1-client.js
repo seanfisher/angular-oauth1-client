@@ -1,4 +1,4 @@
-/*! angular-oauth1-client - v0.1.2 - 2015-07-24
+/*! angular-oauth1-client - v0.1.2 - 2015-08-31
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
 /*! angular-oauth1-client - v0.1.8 - 2015-07-23
 * Copyright (c) 2015 Sean Fisher; Licensed MIT */
@@ -397,7 +397,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                                 getAuthorizedHttp(function(item) {deffered.resolve(item);}, access_data);
                             });
                         }, function(error) {
-                           deffered.resolve({error: 'error'});
+                           deffered.resolve({'error': error});
                         });
 
 

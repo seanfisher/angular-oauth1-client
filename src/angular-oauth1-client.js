@@ -395,7 +395,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                                 getAuthorizedHttp(function(item) {deffered.resolve(item);}, access_data);
                             });
                         }, function(error) {
-                           deffered.resolve({error: 'error'});
+                           deffered.resolve({'error': error});
                         });
 
 
