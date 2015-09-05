@@ -1,7 +1,4 @@
-/*! angular-oauth1-client - v0.1.8 - 2015-07-23
-* Copyright (c) 2015 Sean Fisher; Licensed MIT */
 (function(window, angular, undefined) {'use strict';
-
 
 angular.module('oauth1Client', ['LocalStorageModule'])
 
@@ -37,9 +34,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         onCompletion(localStorageService.get(OAUTH_TOKEN_KEY), localStorageService.get(OAUTH_TOKEN_SECRET_KEY));
 
     };
-
-
-
 })
 
 .factory('oauth1Signer', [function oauth1SignerFactory() {
@@ -217,6 +211,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         }
     };
 }])
+
 .provider('oauth1Client', function oauth1ClientProvider () {
     var consumerKey;
     var consumerSecret;

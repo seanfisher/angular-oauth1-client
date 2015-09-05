@@ -3,7 +3,7 @@
   "author": {
       "name": "Sean Fisher"
   },
-  "version": "0.1.2",
+  "version": "0.1.10",
   "description": "An OAuth1.0a client for AngularJS and Cordova/Ionic",
   "licenses": [
       {"type": "MIT"}
