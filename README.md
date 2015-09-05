@@ -20,7 +20,7 @@ For example, `index.html`:
     <script src="lib/cryptojslib/rollups/hmac-sha1.js"></script>
     <script src="lib/cryptojslib/components/enc-base64-min.js"></script>
     <script src="lib/angular-local-storage/dist/angular-local-storage.min.js"></script>
-    <script src="lib/angular-oauth1-client/src/angular-oauth1-client.min.js"></script>
+    <script src="lib/angular-oauth1-client/dist/angular-oauth1-client.min.js"></script>
 
 Make sure to install the [`cordova-plugin-inappbrowser` plugin](https://github.com/apache/cordova-plugin-inappbrowser):
 
