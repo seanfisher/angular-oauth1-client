@@ -326,7 +326,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 });
             })
             .error(function(data, status, headers, config) {
-                alert("Error: " + data);
+                alert("Error: " + JSON.stringify(data));
             });
             return deffered.promise;
         }
