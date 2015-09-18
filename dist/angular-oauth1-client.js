@@ -280,6 +280,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 });
             })
             .error(function(data, status, headers, config) {
+                alert("Error: " + JSON.stringify(data));
                 deferred.reject("Error: " + data);
             });
             return deferred.promise;
