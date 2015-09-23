@@ -33,9 +33,28 @@ Make sure to install the [`cordova-plugin-inappbrowser` plugin](https://github.c
 
 ## Usage
 
-Example usage would be to put this in your controller:
+First you need to configure oauth1Client with your API data:
+
+    angular.module('myModule', [
+        'oauth1Client'
+    ])
+
+    .config(function(oauth1ClientProvider) {
+        oauth1ClientProvider.config({
+            consumerKey: '',
+            consumerSecret: '',
+            requestEndpoint: '',
+            authorizeEndpoint: '',
+            accessEndpoint: '',
+            oauthCallback: ''
+        });
+    })
+
+Then authorize your app in your controller:
 
     var authorizationProcess = oauth1Client.authorize();
+
+Finally do some requests to server:
 
     authorizationProcess.then(function(authorizedHttp) {
         authorizedHttp({
