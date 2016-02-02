@@ -32,9 +32,9 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         }
 
     };
+
     self.getTokenAndSecret = function(onCompletion){
         onCompletion(localStorageService.get(OAUTH_TOKEN_KEY), localStorageService.get(OAUTH_TOKEN_SECRET_KEY));
-
     };
 })
 
@@ -59,8 +59,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 method: "GET",
                 timestamp: Math.floor(Date.now() / 1000),
                 nonce: randomString(32),
-                callbackUrl: null,
-                verifier: null,
                 oauthParameters: function() {
                     var self, queryFields;
                     self = this;
@@ -81,6 +79,9 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     }
                     if (self.verifier) {
                         queryFields.oauth_verifier = self.verifier;
+                    }
+                    if (self.scopes) {
+                        queryFields.scopes = self.scopes;
                     }
                     return queryFields;
                 },
@@ -221,6 +222,9 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     var authorizeEndpoint;
     var accessEndpoint;
     var oauthCallback;
+    var requestToken;
+    var requestTokenSecret;
+    var scopes;
 
     this.config = function(settings) {
         consumerKey = settings.consumerKey;
@@ -229,6 +233,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         authorizeEndpoint = settings.authorizeEndpoint;
         accessEndpoint = settings.accessEndpoint;
         oauthCallback = settings.oauthCallback;
+        scopes = settings.scopes;
     };
 
     // utility functions
@@ -280,8 +285,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 });
             })
             .error(function(data, status, headers, config) {
-                alert("Error: " + JSON.stringify(data));
-                deferred.reject("Error: " + data);
+                alert("getRequestTokenError: " + JSON.stringify(data));
+                deferred.reject("getRequestTokenError: " + JSON.stringify(data));
             });
             return deferred.promise;
         }
@@ -299,8 +304,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 
                     deffered.resolve({
                         returned_oauth_token: getURLParameter(event.url, 'oauth_token'),
-                        oauth_verifier: getURLParameter(event.url, 'verifier'),
-                        wp_scope: getURLParameter(event.url, 'wp_scope')
+                        oauth_verifier: getURLParameter(event.url, 'oauth_verifier'),
                     });
                 }
             });
@@ -329,7 +333,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 });
             })
             .error(function(data, status, headers, config) {
-                alert("Error: " + JSON.stringify(data));
+                alert("getAccessTokenError: " + JSON.stringify(data));
+                deferred.reject("getAccessTokenError: " + JSON.stringify(data));
             });
             return deffered.promise;
         }
@@ -372,20 +377,25 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     url : requestEndpoint,
                     consumerKey : consumerKey,
                     consumerSecret : consumerSecret,
-                    callbackUrl : oauthCallback
+                    callbackUrl : oauthCallback,
+                    scopes : scopes
                 });
                 var authObj = oauthSigner.oauthParameters();
 
                 getRequestToken(oauthSigner, oauthCallback)
                 .then(function(request_data) {
+                    requestToken = request_data.oauth_token;
+                    requestTokenSecret = request_data.oauth_token_secret;
                     return getAuthorizationToken(request_data.oauth_token, oauthCallback, afterWindowOpen, beforeWindowClose, onLoad);
                 })
                 .then(function(authorization_data) {
                     oauthSigner = getOAuthSigner({
                         url : accessEndpoint,
                         consumerKey : consumerKey,
-                        token : authorization_data.returned_oauth_token,
-                        callbackUrl : oauthCallback,
+                        consumerSecret : consumerSecret,
+                        method : "POST",
+                        token : requestToken,
+                        tokenSecret : requestTokenSecret,
                         verifier : authorization_data.oauth_verifier
                     });
                     return getAccessToken(oauthSigner);
@@ -395,7 +405,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                         getAuthorizedHttp(function(item) {deffered.resolve(item);}, access_data);
                     });
                 }, function(error) {
-                    deffered.resolve({'error': error});
+                    alert('Error: ' + JSON.stringify(error));
+                    deffered.resolve({'error': JSON.stringify(error)});
                 });
                 return deffered.promise;
             }
