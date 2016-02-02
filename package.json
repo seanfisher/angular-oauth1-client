@@ -1,9 +1,10 @@
 {
   "name": "angular-oauth1-client",
   "author": {
-      "name": "Sean Fisher"
+      "name": "Sean Fisher",
+      "email": "me@seafish.io"
   },
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "An OAuth1.0a client for AngularJS and Cordova/Ionic",
   "licenses": [
       {"type": "MIT"}
