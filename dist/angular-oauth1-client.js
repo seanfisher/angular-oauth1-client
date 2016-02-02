@@ -292,8 +292,10 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         }
 
         function getAuthorizationToken(oauth_token, callback_url, afterWindowOpen, beforeWindowClose, onLoad) {
-            var deffered = $q.defer();
-            var auth_window = window.open(authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url, '_blank', 'location=yes,clearcache=yes,hidden=yes');
+            var deferred = $q.defer();
+
+            var authorizationTokenUrl = authorizeEndpoint + "?oauth_token=" + oauth_token + "&oauth_callback=" + callback_url;
+            var auth_window = window.open(authorizationTokenUrl, '_blank', 'location=no,clearcache=yes,hidden=yes');
             var visible = false;
             auth_window.addEventListener('loadstart', function(event) {
                 if((event.url).startsWith(callback_url)) {
@@ -302,7 +304,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     }
                     auth_window.close();
 
-                    deffered.resolve({
+                    deferred.resolve({
                         returned_oauth_token: getURLParameter(event.url, 'oauth_token'),
                         oauth_verifier: getURLParameter(event.url, 'oauth_verifier'),
                     });
@@ -320,14 +322,14 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     afterWindowOpen();
                 }
             });
-            return deffered.promise;
+            return deferred.promise;
         }
 
         function getAccessToken(oauthSigner) {
-            var deffered = $q.defer();
+            var deferred = $q.defer();
             $http.post(oauthSigner.signedUrl())
             .success(function(data, status, headers, config) {
-                deffered.resolve({
+                deferred.resolve({
                     oauth_token: getURLParameter(data, "oauth_token"),
                     oauth_token_secret: getURLParameter(data, 'oauth_token_secret')
                 });
@@ -336,7 +338,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 alert("getAccessTokenError: " + JSON.stringify(data));
                 deferred.reject("getAccessTokenError: " + JSON.stringify(data));
             });
-            return deffered.promise;
+            return deferred.promise;
         }
 
         function checkAuthenticated(isAuthenticated, isNotAuthenticated) {
@@ -371,7 +373,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 });
             },
             authorize: function(afterWindowOpen, beforeWindowClose, onLoad) {
-                var deffered = $q.defer();
+                var deferred = $q.defer();
 
                 var oauthSigner = getOAuthSigner({
                     url : requestEndpoint,
@@ -381,7 +383,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     scopes : scopes
                 });
                 var authObj = oauthSigner.oauthParameters();
-
                 getRequestToken(oauthSigner, oauthCallback)
                 .then(function(request_data) {
                     requestToken = request_data.oauth_token;
@@ -402,13 +403,13 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 })
                 .then(function(access_data) {
                     oauthPersistence.storeAccessToken(access_data).then(function(){
-                        getAuthorizedHttp(function(item) {deffered.resolve(item);}, access_data);
+                        getAuthorizedHttp(function(item) {deferred.resolve(item);}, access_data);
                     });
                 }, function(error) {
                     alert('Error: ' + JSON.stringify(error));
-                    deffered.resolve({'error': JSON.stringify(error)});
+                    deferred.resolve({'error': JSON.stringify(error)});
                 });
-                return deffered.promise;
+                return deferred.promise;
             }
         };
     }];
@@ -425,15 +426,15 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 $http.defaults.headers.common.Authorization = "OAuth " + self.oauth1Signer.authorizationHeader();
                 $http.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
                 var defer = $q.defer();
-                $http(config).success(
-                    function(data, status, headers, config){
-                        data.authToken = self.oauth1Signer.token;
-                        defer.resolve(data, status, headers, config);
+                $http(config).then(
+                    function(response){
+                        response.data.authToken = self.oauth1Signer.token;
+                        defer.resolve(response);
+                    },
+                    function(response){
+                        defer.reject(response);
                     }
-                )
-                .error(function(data, status, headers, config){
-                    defer.reject(data, status, headers, config);
-                });
+                );
 
                 return defer.promise;
             };

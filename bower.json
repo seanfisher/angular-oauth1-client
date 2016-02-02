@@ -10,7 +10,8 @@
     "AngularJS",
     "Angular",
     "OAuth1",
-    "OAuth1.0a"
+    "OAuth1.0a",
+    "Ionic"
   ],
   "license": "MIT",
   "ignore": [
