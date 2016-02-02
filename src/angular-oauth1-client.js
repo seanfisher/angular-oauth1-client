@@ -2,7 +2,7 @@
 
 angular.module('oauth1Client', ['LocalStorageModule'])
 
-.service('oauthPersistence', function(localStorageService, $q){
+.service('oauthPersistence', ['localStorageService', '$q', function(localStorageService, $q){
 
     var self = this;
     var OAUTH_TOKEN_KEY = "oauth_token";
@@ -34,7 +34,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         onCompletion(localStorageService.get(OAUTH_TOKEN_KEY), localStorageService.get(OAUTH_TOKEN_SECRET_KEY));
 
     };
-})
+}])
 
 .factory('oauth1Signer', [function oauth1SignerFactory() {
     function randomString(length) {
@@ -428,7 +428,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     };
 }])
 
-.service('oauth1Headers', function oauth1HeadersService($http) {
+.service('oauth1Headers', ['$http', function oauth1HeadersService($http) {
     return {
         create: function(signer) {
             this.oauth1Signer = signer;
@@ -451,7 +451,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             $http.defaults.headers.common.Authorization = undefined;
         }
     };
-})
+}])
 
 ;
 
