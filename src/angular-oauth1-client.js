@@ -49,7 +49,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     return {
         create: function(parameters) {
             // Adapted from https://github.com/7digital/oauth-reference-page/blob/gh-pages/oauth.js
-            return _.extend({
+            return angular.extend({
                 token: null,
                 tokenSecret: "",
                 version: "1.0",
@@ -88,28 +88,27 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     self = this;
                     queryFields = self.oauthParameters();
                     fields = self.fields;
-                    _.each(_.keys(fields), function(field) {
+
+                    Object.keys(fields || {}).map(function(field) {
                         return queryFields[field] = fields[field];
                     });
                     return queryFields;
                 },
                 queryString: function() {
-                    var self, queryArguments, orderedFields;
+                    var self, queryArguments;
                     self = this;
                     queryArguments = self.queryStringFields();
-                    orderedFields = _.keys(queryArguments).sort();
-                    var queryString = _.map(orderedFields, function(fieldName) {
+                    return Object.keys(queryArguments).sort().map(function (fieldName) {
                         return fieldName + "=" + self.percentEncode(queryArguments[fieldName]);
                     }).join("&");
-                    return queryString;
                 },
                 urlEncoded: function(fields) {
-                    return _.map(_.keys(fields), function(fieldName) {
+                    return Object.keys(fields).map(function(fieldName) {
                         return fieldName + "=" + encodeURIComponent(fields[fieldName]);
                     }).join("&");
                 },
                 headerEncoded: function(fields) {
-                    return _.map(_.keys(fields), function(fieldName) {
+                    return Object.keys(fields).map(function(fieldName) {
                         return fieldName + '="' + encodeURIComponent(fields[fieldName]) + '"';
                     }).join(", ");
                 },
@@ -137,11 +136,9 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 },
                 parameterEncoded: function(fields) {
                     var self = this;
-                    var strToSign =
-                    _.map(fields, function(field) {
+                    return fields.map(function(field) {
                         return self.percentEncode(field);
                     }).join("&");
-                    return strToSign;
                 },
                 baseString: function() {
                     var self;

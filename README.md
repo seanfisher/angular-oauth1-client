@@ -9,14 +9,12 @@ An OAuth1.0a client for AngularJS and Cordova/Ionic
 
 Make sure to include these in your `index.html`:
 
-* [Underscore](http://underscorejs.org)
 * [CryptoJS/Hmac-Sha1 and Base64 libraries](https://github.com/sytelus/CryptoJS)
 * [Angular Local Storage](https://github.com/grevory/angular-local-storage)
 * angular-oauth1-client (this repository)
 
 For example, `index.html`:
 
-    <script src="lib/underscore/underscore-min.js"></script>
     <script src="lib/cryptojslib/rollups/hmac-sha1.js"></script>
     <script src="lib/cryptojslib/components/enc-base64-min.js"></script>
     <script src="lib/angular-local-storage/dist/angular-local-storage.min.js"></script>

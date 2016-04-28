@@ -22,7 +22,6 @@
     "tests"
   ],
   "dependencies": {
-    "underscore": "~1.8.3",
     "angular-local-storage": "~0.2.2",
     "cryptojslib": "~3.1.2"
   }
