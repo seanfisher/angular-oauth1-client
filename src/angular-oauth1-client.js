@@ -314,7 +314,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 tokenSecret : oauth_token_secret
             });
 
-            oauth1Headers.create(signer);
             onCompletion(oauth1AuthorizedHttp.create(signer));
         }
 
@@ -372,26 +371,17 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     }];
 })
 
-.service('oauth1AuthorizedHttp', ['$http', '$q', function oauth1AuthorizedHttpService($http, $q) {
+.service('oauth1AuthorizedHttp', ['$http', '$q', 'oauth1Headers', function oauth1AuthorizedHttpService($http, $q, oauth1Headers) {
     return {
         create: function(signer) {
             return function(config) {
-                signer.method = config.method || "GET";
-                signer.url = config.url;
-                $http.defaults.headers.common.Authorization = "OAuth " + signer.authorizationHeader();
-                $http.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
-                var defer = $q.defer();
-                $http(config).then(
+                var headers = oauth1Headers.getHeaders(config.url, config.method || "GET", signer);
+                var configWithHeaders = angular.extend({headers: headers}, config);
+                return $http(configWithHeaders).then(
                     function(response){
                         response.data.authToken = signer.token;
-                        defer.resolve(response);
-                    },
-                    function(response){
-                        defer.reject(response);
-                    }
-                );
-
-                return defer.promise;
+                        return response;
+                    });
             };
         }
     };
@@ -399,24 +389,16 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 
 .service('oauth1Headers', ['$http', function oauth1HeadersService($http) {
     return {
-        create: function(signer) {
-            this.oauth1Signer = signer;
-        },
-        getHeaders: function(url, method) {
-            if(this.oauth1Signer){
-                this.oauth1Signer.method = method;
-                this.oauth1Signer.url = url;
-                return {'Authorization' : "OAuth " + this.oauth1Signer.authorizationHeader(),
-                    'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
-                };
+        getHeaders: function(url, method, signer) {
+            var headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'};
+            if (signer) {
+                signer.method = method;
+                signer.url = url;
+                headers['Authorization'] = "OAuth " + signer.authorizationHeader()
             }
-            else {
-                return {'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'};
-            }
+            return headers;
         },
-        removeAuthorizationHeader: function() {
-            $http.defaults.headers.common.Authorization = undefined;
-        }
+        removeAuthorizationHeader: angular.noop
     };
 }])
 
