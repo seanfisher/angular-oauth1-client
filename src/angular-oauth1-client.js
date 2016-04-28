@@ -58,46 +58,40 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 timestamp: Math.floor(Date.now() / 1000),
                 nonce: randomString(32),
                 oauthParameters: function() {
-                    var self, queryFields;
-                    self = this;
-                    queryFields = {
-                        oauth_consumer_key: self.consumerKey,
-                        oauth_nonce: self.nonce,
-                        oauth_timestamp: self.timestamp,
-                        oauth_signature_method: self.signatureMethod
+                    var queryFields = {
+                        oauth_consumer_key: this.consumerKey,
+                        oauth_nonce: this.nonce,
+                        oauth_timestamp: this.timestamp,
+                        oauth_signature_method: this.signatureMethod
                     };
-                    if (self.token) {
-                        queryFields.oauth_token = self.token;
+                    if (this.token) {
+                        queryFields.oauth_token = this.token;
                     }
-                    if (self.version) {
-                        queryFields.oauth_version = self.version;
+                    if (this.version) {
+                        queryFields.oauth_version = this.version;
                     }
-                    if (self.callbackUrl) {
-                        queryFields.oauth_callback = self.callbackUrl;
+                    if (this.callbackUrl) {
+                        queryFields.oauth_callback = this.callbackUrl;
                     }
-                    if (self.verifier) {
-                        queryFields.oauth_verifier = self.verifier;
+                    if (this.verifier) {
+                        queryFields.oauth_verifier = this.verifier;
                     }
-                    if (self.scopes) {
-                        queryFields.scopes = self.scopes;
+                    if (this.scopes) {
+                        queryFields.scopes = this.scopes;
                     }
                     return queryFields;
                 },
                 queryStringFields: function() {
-                    var self, queryFields, fields;
-                    self = this;
-                    queryFields = self.oauthParameters();
-                    fields = self.fields;
-
+                    var queryFields = this.oauthParameters();
+                    var fields = this.fields;
                     Object.keys(fields || {}).map(function(field) {
                         return queryFields[field] = fields[field];
                     });
                     return queryFields;
                 },
                 queryString: function() {
-                    var self, queryArguments;
-                    self = this;
-                    queryArguments = self.queryStringFields();
+                    var self = this;
+                    var queryArguments = self.queryStringFields();
                     return Object.keys(queryArguments).sort().map(function (fieldName) {
                         return fieldName + "=" + self.percentEncode(queryArguments[fieldName]);
                     }).join("&");
@@ -113,25 +107,19 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     }).join(", ");
                 },
                 urlEncodedFields: function() {
-                    var self;
-                    self = this;
-                    return self.urlEncoded(self.fields);
+                    return this.urlEncoded(this.fields);
                 },
                 authorizationHeader: function() {
-                    var self, fields;
-                    self = this;
-                    fields = self.oauthParameters();
-                    fields.oauth_signature = self.base64Signature();
-                    return self.headerEncoded(fields);
+                    var fields = this.oauthParameters();
+                    fields.oauth_signature = this.base64Signature();
+                    return this.headerEncoded(fields);
                 },
                 urlAndFields: function() {
-                    var self, encodedFields;
-                    self = this;
-                    encodedFields = self.urlEncodedFields();
+                    var encodedFields = this.urlEncodedFields();
                     if (encodedFields) {
-                        return self.url + "?" + encodedFields;
+                        return this.url + "?" + encodedFields;
                     } else {
-                        return self.url;
+                        return this.url;
                     }
                 },
                 parameterEncoded: function(fields) {
@@ -141,28 +129,22 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     }).join("&");
                 },
                 baseString: function() {
-                    var self;
-                    self = this;
-                    return self.parameterEncoded([ self.method, self.url, self.queryString() ]);
+                    return this.parameterEncoded([ this.method, this.url, this.queryString() ]);
                 },
                 hmacKey: function() {
-                    var self;
-                    self = this;
-                    return self.parameterEncoded([ self.consumerSecret, self.tokenSecret ]);
+                    return this.parameterEncoded([ this.consumerSecret, this.tokenSecret ]);
                 },
                 hmac: function(gen1_options) {
-                    var encoding, self;
-                    encoding = gen1_options && gen1_options.hasOwnProperty("encoding") && gen1_options.encoding !== void 0 ? gen1_options.encoding : "binary";
-                    self = this;
+                    var encoding = gen1_options && gen1_options.hasOwnProperty("encoding") && gen1_options.encoding !== void 0 ? gen1_options.encoding : "binary";
                     if (typeof process !== "undefined") {
                         var crypto, h;
                         crypto = require("crypto");
-                        h = crypto.createHmac("sha1", self.hmacKey());
-                        h.update(self.baseString());
+                        h = crypto.createHmac("sha1", this.hmacKey());
+                        h.update(this.baseString());
                         return h.digest(encoding);
                     } else {
                         var binaryHash;
-                        binaryHash = CryptoJS.HmacSHA1(self.baseString(), self.hmacKey());
+                        binaryHash = CryptoJS.HmacSHA1(this.baseString(), this.hmacKey());
                         if (encoding === "base64") {
                             return binaryHash.toString(CryptoJS.enc.Base64);
                         } else {
@@ -171,21 +153,15 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     }
                 },
                 base64Signature: function() {
-                    var self;
-                    self = this;
-                    return self.hmac({
+                    return this.hmac({
                         encoding: "base64"
                     });
                 },
                 signature: function() {
-                    var self;
-                    self = this;
-                    return self.percentEncode(self.base64Signature());
+                    return this.percentEncode(this.base64Signature());
                 },
                 signedUrl: function() {
-                    var self;
-                    self = this;
-                    return self.url + "?" + self.queryString() + "&oauth_signature=" + self.signature();
+                    return this.url + "?" + this.queryString() + "&oauth_signature=" + this.signature();
                 },
                 curl: function() {
                     var self;
@@ -397,17 +373,15 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 .service('oauth1AuthorizedHttp', ['$http', '$q', function oauth1AuthorizedHttpService($http, $q) {
     return {
         create: function(signer) {
-            this.oauth1Signer = signer;
-            var self = this;
             return function(config) {
-                self.oauth1Signer.method = config.method || "GET";
-                self.oauth1Signer.url = config.url;
-                $http.defaults.headers.common.Authorization = "OAuth " + self.oauth1Signer.authorizationHeader();
+                signer.method = config.method || "GET";
+                signer.url = config.url;
+                $http.defaults.headers.common.Authorization = "OAuth " + signer.authorizationHeader();
                 $http.defaults.headers.common['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
                 var defer = $q.defer();
                 $http(config).then(
                     function(response){
-                        response.data.authToken = self.oauth1Signer.token;
+                        response.data.authToken = signer.token;
                         defer.resolve(response);
                     },
                     function(response){
@@ -427,11 +401,10 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             this.oauth1Signer = signer;
         },
         getHeaders: function(url, method) {
-            var self = this;
-            if(self.oauth1Signer){
-                self.oauth1Signer.method = method;
-                self.oauth1Signer.url = url;
-                return {'Authorization' : "OAuth " + self.oauth1Signer.authorizationHeader(),
+            if(this.oauth1Signer){
+                this.oauth1Signer.method = method;
+                this.oauth1Signer.url = url;
+                return {'Authorization' : "OAuth " + this.oauth1Signer.authorizationHeader(),
                     'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8'
                 };
             }
