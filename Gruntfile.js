@@ -52,6 +52,11 @@ module.exports = function(grunt) {
         src: 'Gruntfile.js'
       }
     },
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js'
+      }
+    },
     watch: {
       gruntfile: {
         files: '<%= jshint.gruntfile.src %>',
@@ -69,6 +74,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-karma');
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
