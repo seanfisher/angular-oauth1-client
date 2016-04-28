@@ -242,15 +242,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         return decodeURIComponent(value.replace(/\+/g, '%20')) || null;
     }
 
-    function randomString(length) {
-        var text = "";
-        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        for(var i = 0; i < length; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
-        return text;
-    }
-
     if (typeof String.prototype.startsWith != 'function') {
         String.prototype.startsWith = function (str){
             return this.indexOf(str) === 0;
@@ -266,23 +257,21 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         'oauthPersistence',
         function($q, $http, oauth1Signer, oauth1Headers, oauth1AuthorizedHttp, oauthPersistence) {
 
-        var self = this;
-
         function getOAuthSigner(params) {
             return oauth1Signer.create(params);
         }
 
-        function getRequestToken(oauthSigner, callback_url) {
+        function getRequestToken(oauthSigner) {
             var deferred = $q.defer();
             $http.get(oauthSigner.signedUrl())
-            .success(function(data, status, headers, config) {
+            .success(function(data) {
                 deferred.resolve({
                     oauth_token: getURLParameter(data, "oauth_token"),
                     oauth_token_secret: getURLParameter(data, "oauth_token_secret"),
                     oauth_callback_confirmed: getURLParameter(data, "oauth_callback_confirmed")
                 });
             })
-            .error(function(data, status, headers, config) {
+            .error(function(data) {
                 alert("getRequestTokenError: " + JSON.stringify(data));
                 deferred.reject("getRequestTokenError: " + JSON.stringify(data));
             });
@@ -304,7 +293,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
 
                     deferred.resolve({
                         returned_oauth_token: getURLParameter(event.url, 'oauth_token'),
-                        oauth_verifier: getURLParameter(event.url, 'oauth_verifier'),
+                        oauth_verifier: getURLParameter(event.url, 'oauth_verifier')
                     });
                 }
             });
@@ -326,24 +315,20 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         function getAccessToken(oauthSigner) {
             var deferred = $q.defer();
             $http.post(oauthSigner.signedUrl())
-            .success(function(data, status, headers, config) {
+            .success(function(data) {
                 deferred.resolve({
                     oauth_token: getURLParameter(data, "oauth_token"),
                     oauth_token_secret: getURLParameter(data, 'oauth_token_secret')
                 });
             })
-            .error(function(data, status, headers, config) {
+            .error(function(data) {
                 alert("getAccessTokenError: " + JSON.stringify(data));
                 deferred.reject("getAccessTokenError: " + JSON.stringify(data));
             });
             return deferred.promise;
         }
 
-        function checkAuthenticated(isAuthenticated, isNotAuthenticated) {
-            oauthPersistence.accessIsInStorage(isAuthenticated, isNotAuthenticated);
-        }
-
-        function getAuthorizedHttp(onCompletion, access_data) {
+            function getAuthorizedHttp(onCompletion, access_data) {
             var oauth_token = access_data.oauth_token;
             var oauth_token_secret = access_data.oauth_token_secret;
             var signer = getOAuthSigner({
@@ -380,8 +365,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                     callbackUrl : oauthCallback,
                     scopes : scopes
                 });
-                var authObj = oauthSigner.oauthParameters();
-                getRequestToken(oauthSigner, oauthCallback)
+                getRequestToken(oauthSigner)
                 .then(function(request_data) {
                     requestToken = request_data.oauth_token;
                     requestTokenSecret = request_data.oauth_token_secret;
@@ -444,7 +428,6 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     return {
         create: function(signer) {
             this.oauth1Signer = signer;
-            var self = this;
         },
         getHeaders: function(url, method) {
             var self = this;
