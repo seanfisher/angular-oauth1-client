@@ -137,12 +137,14 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 hmac: function(gen1_options) {
                     var encoding = gen1_options && gen1_options.hasOwnProperty("encoding") && gen1_options.encoding !== void 0 ? gen1_options.encoding : "binary";
                     if (typeof process !== "undefined") {
+                        /* global require */
                         var crypto, h;
                         crypto = require("crypto");
                         h = crypto.createHmac("sha1", this.hmacKey());
                         h.update(this.baseString());
                         return h.digest(encoding);
                     } else {
+                        /* global CryptoJS */
                         var binaryHash;
                         binaryHash = CryptoJS.HmacSHA1(this.baseString(), this.hmacKey());
                         if (encoding === "base64") {
@@ -215,7 +217,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         return decodeURIComponent(value.replace(/\+/g, '%20')) || null;
     }
 
-    if (typeof String.prototype.startsWith != 'function') {
+    if (!angular.isFunction(String.prototype.startsWith)) {
         String.prototype.startsWith = function (str){
             return this.indexOf(str) === 0;
         };

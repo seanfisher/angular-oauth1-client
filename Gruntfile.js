@@ -45,6 +45,9 @@ module.exports = function(grunt) {
         eqnull: true,
         globals: {}
       },
+      oauth: {
+        src: 'src/angular-oauth1-client.js'
+      },
       gruntfile: {
         src: 'Gruntfile.js'
       }
