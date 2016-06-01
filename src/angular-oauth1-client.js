@@ -223,6 +223,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
     var requestToken;
     var requestTokenSecret;
     var scopes;
+    var showErrorsAsAlerts;
 
     this.config = function(settings) {
         consumerKey = settings.consumerKey;
@@ -232,6 +233,9 @@ angular.module('oauth1Client', ['LocalStorageModule'])
         accessEndpoint = settings.accessEndpoint;
         oauthCallback = settings.oauthCallback;
         scopes = settings.scopes;
+        // show an alert for the error, in addition to rejecting the deferred?
+        // default this to true for backward compatibility
+        showErrorsAsAlerts = settings.showErrorsAsAlerts !== false;
     };
 
     // utility functions
@@ -283,7 +287,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 });
             })
             .error(function(data, status, headers, config) {
-                alert("getRequestTokenError: " + JSON.stringify(data));
+                if(showErrorsAsAlerts)
+                    alert("getRequestTokenError: " + JSON.stringify(data));
                 deferred.reject("getRequestTokenError: " + JSON.stringify(data));
             });
             return deferred.promise;
@@ -333,7 +338,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                 });
             })
             .error(function(data, status, headers, config) {
-                alert("getAccessTokenError: " + JSON.stringify(data));
+                if(showErrorsAsAlerts)
+                    alert("getAccessTokenError: " + JSON.stringify(data));
                 deferred.reject("getAccessTokenError: " + JSON.stringify(data));
             });
             return deferred.promise;
@@ -404,7 +410,8 @@ angular.module('oauth1Client', ['LocalStorageModule'])
                         getAuthorizedHttp(function(item) {deferred.resolve(item);}, access_data);
                     });
                 }, function(error) {
-                    alert('Error: ' + JSON.stringify(error));
+                    if(showErrorsAsAlerts)
+                        alert('Error: ' + JSON.stringify(error));
                     deferred.resolve({'error': JSON.stringify(error)});
                 });
                 return deferred.promise;
