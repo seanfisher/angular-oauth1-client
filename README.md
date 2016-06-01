@@ -46,7 +46,8 @@ First you need to configure oauth1Client with your API data. Include oauth1Clien
             requestEndpoint: 'http://localhost/wordpress/oauth1/request',
             authorizeEndpoint: 'http://localhostwordpress/oauth1/authorize',
             accessEndpoint: 'http://localhost/wordpress/oauth1/access',
-            oauthCallback: 'http://www.google.com'
+            oauthCallback: 'http://www.google.com',
+            showErrorsAsAlerts: false
         });
     })
 
