@@ -1,3 +1,4 @@
+/*global window: false */
 (function(window, angular, undefined) {'use strict';
 
 angular.module('oauth1Client', ['LocalStorageModule'])
@@ -377,7 +378,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             if (signer) {
                 signer.method = method;
                 signer.url = url;
-                headers['Authorization'] = "OAuth " + signer.authorizationHeader()
+                headers['Authorization'] = "OAuth " + signer.authorizationHeader();
             }
             return headers;
         },

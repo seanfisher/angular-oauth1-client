@@ -1,4 +1,4 @@
-/*! angular-oauth1-client - v0.1.12 - 2016-05-11
+/*! angular-oauth1-client - v0.1.12 - 2016-06-06
 * https://github.com/seanfisher/angular-oauth1-client
 * Copyright (c) 2016 Sean Fisher; Licensed  */
 (function(window, angular, undefined) {'use strict';
@@ -380,7 +380,7 @@ angular.module('oauth1Client', ['LocalStorageModule'])
             if (signer) {
                 signer.method = method;
                 signer.url = url;
-                headers['Authorization'] = "OAuth " + signer.authorizationHeader()
+                headers['Authorization'] = "OAuth " + signer.authorizationHeader();
             }
             return headers;
         },

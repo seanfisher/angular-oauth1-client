@@ -28,7 +28,7 @@ describe('oauth1AuthorizedHttp', function() {
         $httpBackend.when('GET', '/foo/bar').respond(function(method, url, data, headers) {
             expect(headers['Authorization']).toBe('OAuth oauth_consumer_key="boshGesvuWojyemWicsoshEctUsicEpt", oauth_nonce="corWyctucdeWeizufCerkyodPhivcuIt", oauth_timestamp="314159", oauth_signature_method="HMAC-SHA1", oauth_token="OtDohepDyikAjMatbealCecdixJucgee", oauth_version="1.0", oauth_signature="Qmhw%2Bz1oQ5bQhPt82ZONhHhV%2FKI%3D"');
             expect(headers['Content-Type']).toBe('application/x-www-form-urlencoded; charset=UTF-8');
-            expect(data).toBe('{"foo":"bar"}'); // FIXME should be object!?
+            expect(data).toBe('{"foo":"bar"}');
             return headers;
         });
         $httpBackend.expectGET('/foo/bar');
