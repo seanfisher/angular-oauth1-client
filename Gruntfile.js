@@ -45,8 +45,16 @@ module.exports = function(grunt) {
         eqnull: true,
         globals: {}
       },
+      oauth: {
+        src: 'src/angular-oauth1-client.js'
+      },
       gruntfile: {
         src: 'Gruntfile.js'
+      }
+    },
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js'
       }
     },
     watch: {
@@ -66,6 +74,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-karma');
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
