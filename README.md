@@ -1,5 +1,8 @@
-# angular-oauth1-client
+# angular-oauth1-client 
+[![Build Status](https://travis-ci.org/seanfisher/angular-oauth1-client.svg?branch=master)](https://travis-ci.org/seanfisher/angular-oauth1-client)
+
 An OAuth1.0a client for AngularJS and Cordova/Ionic
+
 
 ## Getting Started
 
