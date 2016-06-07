@@ -14,9 +14,3 @@ node_js:
 before_script:
   - npm install -g bower
   - bower install
-#   - npm install -g karma
-#   - npm install -g grunt
-#   - npm install -g karma-jasmine
-#   - npm install -g karma-phantomjs-launcher
-#
-# script: grunt karma
