@@ -19,7 +19,7 @@
     "Ionic"
   ],
   "scripts": {
-    "test": "karma start"
+    "test": "karma start --single-run"
   },
   "license": "MIT",
   "engines": {

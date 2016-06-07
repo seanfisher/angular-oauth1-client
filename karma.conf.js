@@ -10,7 +10,7 @@ module.exports = function(config) {
             'test/*.js'
         ],
 
-        autoWatch: false,
+        autoWatch: true,
 
         frameworks: ['jasmine'],
 
